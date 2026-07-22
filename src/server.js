@@ -31,7 +31,7 @@ app.use('/api/scan', require('./routes/scanRoutes'));
 app.use('/api/reminders', require('./routes/reminderRoutes'));
 app.use('/api/inventory', require('./routes/inventoryRoutes'));
 app.use('/api/financial', require('./routes/financialRoutes'));
-app.use('/api/vet', require('./routes/vetRoutes'));
+// app.use('/api/vet', require('./routes/vetRoutes'));
 
 // Health check
 app.get('/health', (req, res) => {

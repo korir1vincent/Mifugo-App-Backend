@@ -16,8 +16,8 @@ It helps farmers and livestock managers track animals, health records, finances,
 - ⏰ Reminders & alerts system
 - 💰 Financial tracking (expenses & revenue)
 - 📦 Inventory management
-- 👨‍⚕️ Vet consultation & booking system
-- 💬 Real-time chat with vets
+<!-- - 👨‍⚕️ Vet consultation & booking system
+- 💬 Real-time chat with vets -->
 - 👤 User profile management
 - ⚙️ Settings (dark mode, notifications, privacy)
 
@@ -28,7 +28,7 @@ It helps farmers and livestock managers track animals, health records, finances,
 - JWT authentication
 - MongoDB database integration
 - File upload support (images/documents)
-- Veterinary module APIs
+<!-- - Veterinary module APIs -->
 - Financial & inventory APIs
 - Health check & DB monitoring routes
 

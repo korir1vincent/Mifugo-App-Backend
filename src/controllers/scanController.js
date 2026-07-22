@@ -92,7 +92,7 @@ Analyze this image of livestock and provide a detailed health assessment. Return
   "healthStatus": "Healthy" or "Moderate Concern" or "Critical",
   "condition": "primary condition or diagnosis",
   "severity": "Low" or "Medium" or "High",
-  "vetConsultRequired": true or false,
+  // "vetConsultRequired": true or false,
   "symptoms": ["symptom 1", "symptom 2", "symptom 3"],
   "recommendations": [
     {
