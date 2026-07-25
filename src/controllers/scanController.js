@@ -3,7 +3,6 @@ const Groq = require('groq-sdk');
 const fs = require('fs');
 const path = require('path');
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // @desc    Create new scan
 // @route   POST /api/scan
