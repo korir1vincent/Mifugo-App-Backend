@@ -4,6 +4,14 @@ const fs = require('fs');
 const path = require('path');
 
 
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+console.log("Groq key exists:", !!process.env.GROQ_API_KEY);
+console.log("Groq key prefix:", process.env.GROQ_API_KEY?.substring(0, 8));
+
+
 // @desc    Create new scan
 // @route   POST /api/scan
 // @access  Private
@@ -66,6 +74,7 @@ exports.deleteScan = async (req, res) => {
 // @desc    Analyze image with Groq Vision
 // @route   POST /api/scan/analyze
 // @access  Private
+
 exports.analyzeImage = async (req, res) => {
   try {
     const file = req.file;
@@ -116,7 +125,7 @@ Analyze this image of livestock and provide a detailed health assessment. Return
 If the image does not show livestock, set healthStatus to "Unable to Analyze" and condition to "No livestock detected in image". Only return the JSON object, no other text.`;
 
     const response = await groq.chat.completions.create({
-      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      model: "meta-llama/llama-4-maverick-17b-128e-instruct",
       messages: [
         {
           role: 'user',
@@ -134,6 +143,9 @@ If the image does not show livestock, set healthStatus to "Unable to Analyze" an
       temperature: 0.1,
       max_tokens: 1024
     });
+    console.log("File:", file.originalname);
+    console.log("Mime:", mimeType);
+    console.log("Size:", imageData.length);
 
     const responseText = response.choices[0]?.message?.content?.trim();
 
@@ -161,7 +173,17 @@ If the image does not show livestock, set healthStatus to "Unable to Analyze" an
 
     res.status(200).json({ success: true, analysis });
   } catch (error) {
-    console.error('Groq analysis error:', error);
-    res.status(500).json({ success: false, message: error.message });
-  }
+  console.error("========== GROQ ERROR ==========");
+  console.error("Message:", error.message);
+  console.error("Status:", error.status);
+  console.error("Response:", error.response?.data);
+  console.error("Stack:", error.stack);
+  console.error(error);
+  console.error("================================");
+
+  res.status(500).json({
+    success: false,
+    message: error.message,
+  });
+}
 };
