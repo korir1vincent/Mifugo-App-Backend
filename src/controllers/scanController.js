@@ -125,7 +125,7 @@ Analyze this image of livestock and provide a detailed health assessment. Return
 If the image does not show livestock, set healthStatus to "Unable to Analyze" and condition to "No livestock detected in image". Only return the JSON object, no other text.`;
 
     const response = await groq.chat.completions.create({
-      model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+      model: "qwen/qwen3.6-27b",
       messages: [
         {
           role: 'user',
