@@ -1,6 +1,8 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+// const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
+
 
 // Generate JWT Token
 const signToken = (id) => {
@@ -10,16 +12,17 @@ const signToken = (id) => {
 };
 
 // Email transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  logger: true,
-  debug: true,
-});
+// const transporter = nodemailer.createTransport({
+//   host: process.env.EMAIL_HOST,
+//   port: process.env.EMAIL_PORT,
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS,
+//   },
+//   logger: true,
+//   debug: true,
+// });
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -209,8 +212,8 @@ exports.forgotPassword = async (req, res) => {
     user.resetPasswordExpiry = resetCodeExpiry;
     await user.save({ validateBeforeSave: false });
 
-    await transporter.sendMail({
-      from: `"Mifugo App" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: "Mifugo App <onboarding@resend.dev>",
       to: user.email,
       subject: "Your Password Reset Code",
       html: `
