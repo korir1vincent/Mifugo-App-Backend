@@ -213,7 +213,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     await resend.emails.send({
-      from: "Mifugo App <onboarding@resend.dev>",
+      from: "Mifugo App <hello@linxvintech.site>",
       to: user.email,
       subject: "Your Password Reset Code",
       html: `
