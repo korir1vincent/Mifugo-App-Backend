@@ -290,3 +290,48 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+// @desc    Delete current user's account
+// @route   DELETE /api/auth/delete-account
+// @access  Private
+exports.deleteAccount = async (req, res) => {
+  try {
+    console.log("========== DELETE ACCOUNT REQUEST ==========");
+    console.log("User ID:", req.user?._id);
+    console.log("User email:", req.user?.email);
+
+    if (!req.user?._id) {
+      return res.status(401).json({
+        success: false,
+        message: "User authentication information is missing",
+      });
+    }
+
+    const deletedUser = await User.findByIdAndDelete(req.user._id);
+
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User account was not found",
+      });
+    }
+
+    console.log("Deleted user:", deletedUser.email);
+    console.log("============================================");
+
+    return res.status(200).json({
+      success: true,
+      message: "Account deleted successfully",
+    });
+  } catch (error) {
+    console.error("========== DELETE ACCOUNT ERROR ==========");
+    console.error("Error name:", error.name);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    console.error("==========================================");
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete account",
+    });
+  }
+};
