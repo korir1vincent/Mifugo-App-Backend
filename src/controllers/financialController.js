@@ -2705,7 +2705,7 @@ This is an automated financial report.
 
     res.status(200).json({
       success: true,
-      message: `Report sent to ${user.email}`,
+      message: `Report sent to ${user.email}. Check your inbox/spam for the attached PDF.`,
     });
   } catch (error) {
     console.error("Report generation error:", error);
