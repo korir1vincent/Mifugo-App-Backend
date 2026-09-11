@@ -141,7 +141,7 @@ If the image does not show livestock, set healthStatus to "Unable to Analyze" an
         }
       ],
       temperature: 0.1,
-      max_tokens: 800,
+      max_tokens: 2048,
       reasoning_format: "hidden"
     });
     console.log("File:", file.originalname);
