@@ -2342,7 +2342,7 @@ exports.generateReport = async (req, res) => {
     });
 
     await resend.emails.send({
-      from: "Mifugo App <hello@linxvintech.site>",
+      from: "Mifugo App <info@mifugo.app>",
       to: user.email,
       subject: `Your Mifugo Financial Report — ${reportDate}`,
 

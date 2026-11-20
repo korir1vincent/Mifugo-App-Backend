@@ -93,9 +93,16 @@ exports.updateReminder = async (req, res) => {
       });
     }
 
+    const update = { ...req.body };
+    // A new date means the push should fire again for the new date
+    if (update.date) {
+      update.notifiedDayBefore = false;
+      update.notifiedDue = false;
+    }
+
     reminder = await Reminder.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      update,
       { new: true, runValidators: true }
     );
 

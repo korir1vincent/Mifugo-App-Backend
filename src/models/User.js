@@ -31,6 +31,25 @@ const userSchema = new mongoose.Schema({
     enum: ['farmer', 'vet', 'admin'], 
     default: 'farmer' 
   },
+  // IANA time zone from the phone (e.g. Africa/Nairobi). Used to send
+  // reminders at a sensible local hour.
+  timezone: {
+    type: String,
+    default: 'Africa/Nairobi'
+  },
+  // Expo push tokens, one per device the farmer is logged in on
+  pushTokens: {
+    type: [String],
+    default: []
+  },
+  notificationSettings: {
+    reminders: { type: Boolean, default: true },
+    healthAlerts: { type: Boolean, default: true },
+    inventoryAlerts: { type: Boolean, default: false },
+    financialReports: { type: Boolean, default: false }
+  },
+  // e.g. "2026-W46" so the weekly summary is only sent once per week
+  lastWeeklySummaryKey: String,
   suspended: {
     type: Boolean,
     default: false
@@ -83,6 +102,7 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 userSchema.methods.toJSON = function() {
   const user = this.toObject();
   delete user.password;
+  delete user.pushTokens;
   return user;
 };
 

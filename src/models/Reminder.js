@@ -42,6 +42,15 @@ const reminderSchema = new mongoose.Schema({
   recurringInterval: {
     type: String,
     enum: ['Daily', 'Weekly', 'Monthly', 'Yearly']
+  },
+  // Push notification bookkeeping so each reminder is only announced once
+  notifiedDayBefore: {
+    type: Boolean,
+    default: false
+  },
+  notifiedDue: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

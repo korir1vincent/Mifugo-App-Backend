@@ -1,4 +1,5 @@
 const Animal = require('../models/Animal');
+const { notifyAnimalHealthChange } = require('../services/notificationJobs');
 
 // @desc    Get all animals for a user
 // @route   GET /api/animals
@@ -91,11 +92,16 @@ exports.updateAnimal = async (req, res) => {
       });
     }
 
+    const previousStatus = animal.healthStatus;
+
     animal = await Animal.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     );
+
+    // Fire-and-forget push if the animal just became sick / quarantined / under treatment
+    notifyAnimalHealthChange(req.user._id, animal, previousStatus);
 
     res.status(200).json({
       success: true,

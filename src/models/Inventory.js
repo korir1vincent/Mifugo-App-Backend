@@ -39,6 +39,11 @@ const inventorySchema = new mongoose.Schema({
     name: String,
     contact: String
   },
+  // true once a low-stock push has been sent; reset when restocked
+  lowStockNotified: {
+    type: Boolean,
+    default: false
+  },
   expiryDate: Date,
   batchNumber: String,
   location: String,

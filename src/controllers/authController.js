@@ -2,6 +2,7 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 // const nodemailer = require("nodemailer");
 const { Resend } = require("resend");
+const { isExpoPushToken, sendPushToUser, checkReceipts } = require("../services/pushService");
 
 
 // Generate JWT Token
@@ -213,7 +214,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     await resend.emails.send({
-      from: "Mifugo App <hello@linxvintech.site>",
+      from: "Mifugo App <support@mifugo.app>",
       to: user.email,
       subject: "Your Password Reset Code",
       html: `
@@ -274,7 +275,7 @@ exports.resetPassword = async (req, res) => {
           message: "Password must be at least 6 characters",
         });
     }
-
+    
     user.password = newPassword;
     user.resetPasswordCode = undefined;
     user.resetPasswordExpiry = undefined;
@@ -333,5 +334,129 @@ exports.deleteAccount = async (req, res) => {
       success: false,
       message: "Failed to delete account",
     });
+  }
+};
+
+// ============================================================
+// PUSH NOTIFICATIONS
+// ============================================================
+
+// @desc    Register this phone's Expo push token
+// @route   POST /api/auth/push-token
+// @access  Private
+exports.registerPushToken = async (req, res) => {
+  try {
+    const { token, timezone } = req.body;
+
+    if (!token || !isExpoPushToken(token)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid push token" });
+    }
+
+    // If another account was logged in on this phone, stop sending it their alerts
+    await User.updateMany(
+      { _id: { $ne: req.user._id }, pushTokens: token },
+      { $pull: { pushTokens: token } }
+    );
+
+    const update = { $addToSet: { pushTokens: token } };
+    if (timezone) update.$set = { timezone: String(timezone) };
+    await User.updateOne({ _id: req.user._id }, update);
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Register push token error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Remove this phone's push token (on logout)
+// @route   DELETE /api/auth/push-token
+// @access  Private
+exports.removePushToken = async (req, res) => {
+  try {
+    const { token } = req.body || {};
+    if (token) {
+      await User.updateOne(
+        { _id: req.user._id },
+        { $pull: { pushTokens: token } }
+      );
+    }
+    res.status(200).json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Save which notification categories the farmer wants
+// @route   PUT /api/auth/notification-settings
+// @access  Private
+exports.updateNotificationSettings = async (req, res) => {
+  try {
+    const allowed = ["reminders", "healthAlerts", "inventoryAlerts", "financialReports"];
+    const $set = {};
+    allowed.forEach((key) => {
+      if (typeof req.body[key] === "boolean") {
+        $set[`notificationSettings.${key}`] = req.body[key];
+      }
+    });
+
+    if (Object.keys($set).length) {
+      await User.updateOne({ _id: req.user._id }, { $set });
+    }
+
+    const user = await User.findById(req.user._id);
+    res.status(200).json({ success: true, notificationSettings: user.notificationSettings });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Send a test notification to this farmer's phone(s)
+// @route   POST /api/auth/push-test
+// @access  Private
+exports.sendTestPush = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user.pushTokens || user.pushTokens.length === 0) {
+      return res.status(200).json({
+        success: false,
+        stage: "no-device",
+        message:
+          "This phone has not registered for notifications yet. Open Notification Settings and tap Enable.",
+      });
+    }
+
+    const result = await sendPushToUser(user, {
+      title: "Mifugo test notification",
+      body: "If you can see this, push notifications are working.",
+      data: { screen: "Reminders" },
+    });
+
+    if (result.sent === 0) {
+      return res.status(200).json({
+        success: false,
+        stage: "expo-rejected",
+        message: result.errors.join("; "),
+      });
+    }
+
+    // Google/Apple problems (e.g. missing FCM credentials) only show up in receipts
+    const problems = await checkReceipts(result.ticketIds);
+    if (problems.length) {
+      return res.status(200).json({
+        success: false,
+        stage: "delivery-failed",
+        error: problems[0].error,
+        message: problems[0].message,
+      });
+    }
+
+    res.status(200).json({ success: true, stage: "sent" });
+  } catch (error) {
+    console.error("Test push error:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
